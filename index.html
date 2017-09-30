@@ -1,0 +1,127 @@
+<!doctype html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Business Hours</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+  <script src="https://code.jquery.com/jquery-migrate-1.1.0.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/css/bootstrap-multiselect.css" type="text/css">
+</head>
+<body>
+    
+    <div class="container">
+        <h2>Business Hours Control</h2>
+        <div class="row"> 
+            <input type="hidden" id="counter" value="0">
+            <div class="form-group">
+                <select name="businessHours[0][]" class='mt-multiselect' id="businessHours-0" multiple>
+                    <option value="1">Monday</option>
+                    <option value="2">Tuesday</option>
+                    <option value="3">Wednesday</option>
+                    <option value="4">Thursday</option>
+                    <option value="5">Friday</option>
+                    <option value="6">Saturday</option>
+                    <option value="7">Sunday</option>
+                </select>
+            </div>
+        </div>
+    <div class="addMoreValues"></div>    
+    <div class="form-group addButton">
+        <button type="button" class="btn btn-primary buttonClick">Add</button>
+    </div>
+   </div>
+</body>
+<script type="text/javascript">
+        var remainArr = '';
+        var weekDay = {1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday'};
+        $('.mt-multiselect').multiselect({
+        }).live('change', function(ev) {
+            var selected = [];
+            for( var i = 0; i <= ($('#counter').val()); i++ ) {
+                if( $('#businessHours-' + i).val()) {
+                    $.unique($.merge(selected, $('#businessHours-' + i).val()));
+                    remainArr = $(["1","2","3","4","5","6","7"]).not(selected).get();
+                }
+            }
+            if(remainArr.length === 0){
+                $('.buttonClick').css('display', 'none');
+            } else {
+                $('.buttonClick').css('display', 'block');
+            }
+            addBusinessHours(remainArr);
+        });
+        
+        var counter = $('#counter').val();
+        var displayDays = '';
+        $.each(weekDay, function( index, value ) {
+             displayDays += '<option value = '+ index +'> ' + value + ' </option>';
+        });
+     
+        $('.buttonClick').on('click', function(){
+           if (counter != 0 || remainArr.length != 0 ) {
+                displayDays = '';
+                $.each(weekDay, function( index, value ) {
+                    if (jQuery.inArray(index, remainArr)!= '-1' || remainArr.length == 0 ) {
+                       displayDays += '<option value="'+ index +'">'+ value +'</option>';
+                    } 
+                });
+            }
+           counter = parseInt(counter) + 1;
+           $('.addMoreValues').append('<div class="row" id="manage-remove-' + counter + '">\n\
+                            <div class="form-group">\n\
+                                    <select name="businessHours['+counter+'][]" id="businessHours-' + counter + '" class="mt-multiselect" multiple>' + displayDays + '</select>\n\
+                                    <button type="button" class="btn btn-danger removeButton" id="removebutton-' + counter + '">Remove</button>\n\
+                            </div>\n\
+                            </div>'); 
+            $('#counter').val(counter);
+            $('.mt-multiselect').multiselect();
+        });
+        
+        $('.removeButton').live("click", function(){
+            var currentID = $(this).attr('id');
+            var str = currentID.split("-");
+            var currentArr = $('select#businessHours-'+str[1]).val();
+            if( currentID != "removebutton-0" ) {
+               $('#manage-remove-'+str[1]).remove();
+            }
+            if(currentArr.length != 0) {
+                var selected = []; 
+                for( var i = 0; i <= ($('#counter').val()); i++ ) {
+                    if( $('#businessHours-' + i).val()) {
+                        $.unique($.merge(selected, $('#businessHours-' + i).val()));
+                        remainArr = $(["1","2","3","4","5","6","7"]).not(selected).get();
+                    }
+                }
+                addBusinessHours(remainArr);
+                $('.buttonClick').css('display', 'block');
+            }
+        });
+        
+        function addBusinessHours(remainArr) {
+            for( var i = 0; i <= ($('#counter').val()); i++ ) {
+                var currentDiv = $('#businessHours-' + i).length;
+                if (currentDiv != null && currentDiv > 0) {
+                    var tempArray = '';
+                    var oldvalue = $('#businessHours-' + i).val();
+                    var displayOptions = jQuery.unique($.merge([], remainArr));
+                    (oldvalue != null) ? displayOptions = jQuery.unique($.merge(displayOptions, oldvalue)) : '';
+                    displayOptions = displayOptions.sort();
+                    $.each(displayOptions, function(index, value) {
+                        tempArray += '<option value="' + value + '">' + weekDay[value] + '</option>';
+                    });
+                    $('#businessHours-' + i).html('');
+                    $('#businessHours-' + i).html(tempArray);
+                    $('#businessHours-' + i).val(oldvalue);
+                    $('.mt-multiselect').multiselect();
+                    $('.mt-multiselect').multiselect('rebuild');
+                }
+            }
+        }
+</script>
+</html>
